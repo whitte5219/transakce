@@ -17,17 +17,19 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* Changed for scrollability */
             background: linear-gradient(to bottom, #222222 0%, #111111 25%, #080808 50%, #050505 75%, #000000 100%);
             background-attachment: fixed;
-            overflow: hidden;
+            overflow: auto; /* Changed for scrollability */
             transition: background 0.5s ease;
+            padding: 20px 0; /* Added for scrollability */
         }
         
         .container {
             width: 100%;
             max-width: 580px;
             padding: 20px;
+            margin: 20px auto; /* Added for scrollability */
         }
         
         /* Loading screen */
@@ -334,7 +336,7 @@
                 
                 <div class="detail-row" style="animation-delay: 0.7s">
                     <div class="detail-label">Servis transakce:</div>
-                    <div class="detail-value">NFC Sonoff | UGS #Q7M2A</div>
+                    <div class="detail-value">NFC Sonoff</div>
                 </div>
                 
                 <div class="amount" style="animation-delay: 0.8s">
@@ -343,11 +345,11 @@
             </div>
             
             <div class="bank-logo">
-                ČSOB | UGS - user generated system
+                ČSOB | Transakční systém
             </div>
             
             <div class="footer-note">
-                
+                Transakce byla úspěšně dokončena a potvrzena
             </div>
         </div>
     </div>
@@ -402,7 +404,8 @@
                     // Update transaction details
                     document.getElementById('transactionId').textContent = generateTransactionId();
                     document.getElementById('transactionTime').textContent = fixedTransactionTime;
-                    document.getElementById('fromAccount').textContent = `NFC DETECTED mobile device ${generateMobileNumber()}`;
+                    // CHANGE THIS LINE TO MODIFY MOBILE DEVICE TEXT:
+                    document.getElementById('fromAccount').textContent = `mobile device ${generateMobileNumber()}`;
                     
                     // Animate each detail row with a delay
                     const detailRows = document.querySelectorAll('.detail-row');
@@ -425,9 +428,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Start the sequence
             showTransaction();
-            
-            // No click interaction to reload - removed the click event listener
-            // Page will stay static after initial load
         });
     </script>
 </body>
