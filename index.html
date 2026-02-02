@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transakce</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to bottom, #222222 0%, #111111 25%, #080808 50%, #050505 75%, #000000 100%);
+            background-attachment: fixed;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 580px;
+            padding: 20px;
+        }
+        
+        /* Loading screen */
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: rgba(20, 20, 20, 0.9);
+            border-radius: 15px;
+            padding: 50px 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            border: 1px solid #333;
+            color: white;
+            min-height: 300px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .loading-text {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #f0f0f0;
+            letter-spacing: 1px;
+            position: relative;
+        }
+        
+        .loading-text::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, #4CAF50, transparent);
+            margin-top: 10px;
+            animation: loadingLine 2s infinite ease-in-out;
+        }
+        
+        .loading-subtext {
+            font-size: 16px;
+            color: #aaa;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+        
+        /* Transaction window */
+        .transaction-window {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            border: 3px solid #111;
+            position: relative;
+            animation: slideUp 0.8s ease-out;
+        }
+        
+        .transaction-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .transaction-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .transaction-subtitle {
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+        
+        .transaction-details {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #e0e0e0;
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #34495e;
+            font-size: 16px;
+            min-width: 160px;
+            flex-shrink: 0;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 16px;
+            text-align: right;
+            flex: 1;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .transaction-id {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1.5px;
+            background-color: #f8f9fa;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            font-size: 15px;
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 280px;
+            display: inline-block;
+        }
+        
+        /* Special styling for the DO: row */
+        .do-row {
+            align-items: flex-start;
+        }
+        
+        .do-row .detail-value {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 15px;
+            line-height: 1.4;
+            padding-left: 5px;
+        }
+        
+        .amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #27ae60;
+            text-align: center;
+            margin-top: 15px;
+            padding: 12px;
+            background-color: rgba(39, 174, 96, 0.1);
+            border-radius: 8px;
+            animation: pulseGreen 2s infinite;
+            border: 2px solid #c8e6c9;
+        }
+        
+        .bank-logo {
+            text-align: center;
+            margin-top: 20px;
+            color: #e74c3c;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .footer-note {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        /* Animations */
+        @keyframes loadingLine {
+            0% { transform: scaleX(0.1); opacity: 0.3; }
+            50% { transform: scaleX(1); opacity: 1; }
+            100% { transform: scaleX(0.1); opacity: 0.3; }
+        }
+        
+        @keyframes pulseGreen {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .transaction-window {
+                padding: 20px;
+            }
+            
+            .detail-label, .detail-value {
+                font-size: 15px;
+            }
+            
+            .detail-label {
+                min-width: 120px;
+            }
+            
+            .amount {
+                font-size: 26px;
+            }
+            
+            .transaction-id {
+                font-size: 14px;
+                letter-spacing: 1px;
+                max-width: 200px;
+            }
+            
+            .do-row .detail-value {
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .detail-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .detail-label {
+                min-width: auto;
+            }
+            
+            .detail-value {
+                text-align: left;
+            }
+            
+            .transaction-id {
+                max-width: 100%;
+                white-space: normal;
+                text-align: center;
+            }
+            
+            .do-row .detail-value {
+                white-space: normal;
+                text-overflow: clip;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Loading Screen -->
+        <div class="loading-screen" id="loadingScreen">
+            <div class="loading-text">Načítání transakce</div>
+            <div class="loading-subtext">Probíhá ověření transakčních údajů...</div>
+        </div>
+        
+        <!-- Transaction Window -->
+        <div class="transaction-window" id="transactionWindow">
+            <div class="transaction-header">
+                <div class="transaction-title">Transakce Úspěšná</div>
+                <div class="transaction-subtitle">Platební operace dokončena</div>
+            </div>
+            
+            <div class="transaction-details">
+                <div class="detail-row" style="animation-delay: 0.1s">
+                    <div class="detail-label">ID transakce:</div>
+                    <div class="detail-value">
+                        <span class="transaction-id" id="transactionId">ABCD1234EFGH5678IJKL9012</span>
+                    </div>
+                </div>
+                
+                <div class="detail-row" style="animation-delay: 0.2s">
+                    <div class="detail-label">Čas transakce:</div>
+                    <div class="detail-value" id="transactionTime">00:00:00</div>
+                </div>
+                
+                <div class="detail-row" style="animation-delay: 0.3s">
+                    <div class="detail-label">OD:</div>
+                    <div class="detail-value" id="fromAccount">mobile device 15616</div>
+                </div>
+                
+                <div class="detail-row do-row" style="animation-delay: 0.4s">
+                    <div class="detail-label">DO:</div>
+                    <div class="detail-value">ČSOB bankovní účet 7QK9X2A8MZL4FJ6CPEYB</div>
+                </div>
+                
+                <div class="detail-row" style="animation-delay: 0.5s">
+                    <div class="detail-label">Vlastník účtu:</div>
+                    <div class="detail-value">MYKHAILO BILYI</div>
+                </div>
+                
+                <div class="detail-row" style="animation-delay: 0.6s">
+                    <div class="detail-label">Způsob:</div>
+                    <div class="detail-value">NFC čtečka, auto transakce NTAG čipu</div>
+                </div>
+                
+                <div class="detail-row" style="animation-delay: 0.7s">
+                    <div class="detail-label">Servis transakce:</div>
+                    <div class="detail-value">NFC Sonoff</div>
+                </div>
+                
+                <div class="amount" style="animation-delay: 0.8s">
+                    20 CZK
+                </div>
+            </div>
+            
+            <div class="bank-logo">
+                ČSOB | Transakční systém
+            </div>
+            
+            <div class="footer-note">
+                Transakce byla úspěšně dokončena a potvrzena
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to generate random transaction ID (24 characters - longer text)
+        function generateTransactionId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 24; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        // Function to generate random mobile device number
+        function generateMobileNumber() {
+            return Math.floor(10000 + Math.random() * 90000);
+        }
+        
+        // Function to get current time in HH:MM:SS format (fixed, not updating)
+        function getCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // Store the fixed time
+        let fixedTransactionTime = '';
+        
+        // Function to simulate loading and show transaction
+        function showTransaction() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const transactionWindow = document.getElementById('transactionWindow');
+            
+            // Show loading for 2 seconds
+            setTimeout(() => {
+                // Fade out loading screen
+                loadingScreen.style.opacity = '0';
+                loadingScreen.style.transition = 'opacity 0.5s ease';
+                
+                setTimeout(() => {
+                    // Hide loading screen and show transaction window
+                    loadingScreen.style.display = 'none';
+                    transactionWindow.style.display = 'block';
+                    
+                    // Generate fixed time for this transaction
+                    fixedTransactionTime = getCurrentTime();
+                    
+                    // Update transaction details
+                    document.getElementById('transactionId').textContent = generateTransactionId();
+                    document.getElementById('transactionTime').textContent = fixedTransactionTime;
+                    document.getElementById('fromAccount').textContent = `mobile device ${generateMobileNumber()}`;
+                    
+                    // Animate each detail row with a delay
+                    const detailRows = document.querySelectorAll('.detail-row');
+                    detailRows.forEach(row => {
+                        row.style.opacity = '0';
+                    });
+                    
+                    // Trigger reflow to restart animations
+                    void transactionWindow.offsetWidth;
+                    
+                    detailRows.forEach(row => {
+                        row.style.opacity = '1';
+                    });
+                    
+                }, 500);
+            }, 2000);
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start the sequence
+            showTransaction();
+            
+            // No click interaction to reload - removed the click event listener
+            // Page will stay static after initial load
+        });
+    </script>
+</body>
+</html>
