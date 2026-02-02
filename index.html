@@ -401,31 +401,64 @@
 
     <script>
         // Function to generate random transaction ID (24 characters - longer text)
-        function generateTransactionId() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let result = '';
-            for (let i = 0; i < 24; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return result;
+// Function to generate random transaction ID (24 characters - longer text)
+function generateTransactionId() {
+    // Check if we already have a transaction ID for this session
+    let transactionId = sessionStorage.getItem('transactionId');
+    
+    if (!transactionId) {
+        // Generate new ID if none exists
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < 24; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
         }
+        transactionId = result;
+        // Store it for this tab session
+        sessionStorage.setItem('transactionId', transactionId);
+    }
+    
+    return transactionId;
+}
         
         // Function to generate random mobile device number
-        function generateMobileNumber() {
-            return Math.floor(10000 + Math.random() * 90000);
-        }
+// Function to generate random mobile device number
+function generateMobileNumber() {
+    // Check if we already have a mobile number for this session
+    let mobileNumber = sessionStorage.getItem('mobileNumber');
+    
+    if (!mobileNumber) {
+        // Generate new number if none exists
+        mobileNumber = Math.floor(10000 + Math.random() * 90000);
+        // Store it for this tab session
+        sessionStorage.setItem('mobileNumber', mobileNumber);
+    }
+    
+    return mobileNumber;
+}
         
         // Function to get current time in HH:MM:SS format (fixed, not updating)
-        function getCurrentTime() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            return `${hours}:${minutes}:${seconds}`;
-        }
+// Function to get current time in HH:MM:SS format (fixed, not updating)
+function getCurrentTime() {
+    // Check if we already have a transaction time for this session
+    let transactionTime = sessionStorage.getItem('transactionTime');
+    
+    if (!transactionTime) {
+        // Generate new time if none exists
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        transactionTime = `${hours}:${minutes}:${seconds}`;
+        // Store it for this tab session
+        sessionStorage.setItem('transactionTime', transactionTime);
+    }
+    
+    return transactionTime;
+}
         
         // Store the fixed time
-        let fixedTransactionTime = '';
+        // let fixedTransactionTime = '';
         
         // Function to simulate loading and show transaction
         function showTransaction() {
@@ -443,12 +476,9 @@
                     loadingScreen.style.display = 'none';
                     transactionWindow.style.display = 'block';
                     
-                    // Generate fixed time for this transaction
-                    fixedTransactionTime = getCurrentTime();
-                    
-                    // Update transaction details
-                    document.getElementById('transactionId').textContent = generateTransactionId();
-                    document.getElementById('transactionTime').textContent = fixedTransactionTime;
+// Update transaction details from sessionStorage
+document.getElementById('transactionId').textContent = generateTransactionId();
+document.getElementById('transactionTime').textContent = getCurrentTime();
                     // CHANGE THIS LINE TO MODIFY MOBILE DEVICE TEXT:
                     document.getElementById('fromAccount').textContent = `NFC detected mobile device ${generateMobileNumber()}`;
                     
